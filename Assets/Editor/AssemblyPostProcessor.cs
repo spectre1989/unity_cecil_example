@@ -14,6 +14,8 @@ public static class AssemblyPostProcessor
         try
         {
             Debug.Log( "AssemblyPostProcessor running" );
+
+            // Lock assemblies while they may be altered
             EditorApplication.LockReloadAssemblies();
 
             // This will hold the paths to all the assemblies that will be processed
@@ -64,7 +66,7 @@ public static class AssemblyPostProcessor
                     readerParameters.ReadSymbols = true;
                     readerParameters.SymbolReaderProvider = new Mono.Cecil.Pdb.PdbReaderProvider();
                     writerParameters.WriteSymbols = true;
-                    writerParameters.SymbolWriterProvider = new Mono.Cecil.Mdb.MdbWriterProvider();
+                    writerParameters.SymbolWriterProvider = new Mono.Cecil.Mdb.MdbWriterProvider(); // pdb written out as mdb, as mono can't work with pdbs
                 }
                 else if( File.Exists( mdbPath ) )
                 {
@@ -83,7 +85,7 @@ public static class AssemblyPostProcessor
 
                 // Read assembly
                 AssemblyDefinition assemblyDefinition = AssemblyDefinition.ReadAssembly( assemblyPath, readerParameters );
-
+                
                 // Process it if it hasn't already
                 Debug.Log( "Processing " + Path.GetFileName( assemblyPath ) );
                 if( AssemblyPostProcessor.ProcessAssembly( assemblyDefinition ) )
@@ -98,6 +100,7 @@ public static class AssemblyPostProcessor
                 }
             }
 
+            // Unlock now that we're done
             EditorApplication.UnlockReloadAssemblies();
         }
         catch( Exception e )
@@ -136,6 +139,7 @@ public static class AssemblyPostProcessor
 
                             wasProcessed = true;
                             logAttribute = customAttribute;
+                            break;
                         }
                     }
 
